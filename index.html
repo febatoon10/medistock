@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediStock — Medical Supplies Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0ede8;
+    --surface: #ffffff;
+    --accent: #c0392b;
+    --accent2: #e74c3c;
+    --dark: #1a1a2e;
+    --mid: #4a4a6a;
+    --light: #9090aa;
+    --border: #dddad4;
+    --green: #27ae60;
+    --yellow: #f39c12;
+    --red: #c0392b;
+    --shadow: 0 4px 24px rgba(26,26,46,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--dark);
+    color: #fff;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  }
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+  .logo span { color: var(--accent2); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .badge {
+    background: var(--accent);
+    color: white;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 24px 16px 0;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .stat-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--border);
+    transition: transform 0.15s;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card.green { border-left-color: var(--green); }
+  .stat-card.yellow { border-left-color: var(--yellow); }
+  .stat-card.red { border-left-color: var(--red); }
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.1rem;
+    line-height: 1;
+  }
+  .stat-card.green .stat-num { color: var(--green); }
+  .stat-card.yellow .stat-num { color: var(--yellow); }
+  .stat-card.red .stat-num { color: var(--red); }
+  .stat-label { font-size: 0.72rem; color: var(--light); margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 10px;
+    padding: 20px 16px 0;
+    max-width: 980px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+  .search-wrap { flex: 1; min-width: 160px; position: relative; }
+  .search-wrap input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    background: var(--surface);
+    color: var(--dark);
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { outline: none; border-color: var(--accent); }
+  .search-wrap::before {
+    content: '⌕';
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: var(--light);
+  }
+  select, .btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    background: var(--surface);
+    color: var(--dark);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
+
+  /* TABLE */
+  .table-wrap {
+    margin: 18px 16px 0;
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--dark);
+    color: #bbb;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 13px 16px;
+    text-align: left;
+    font-weight: 500;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f8f6f2; }
+  td { padding: 13px 16px; font-size: 0.85rem; vertical-align: middle; }
+  .item-name { font-weight: 500; color: var(--dark); }
+  .item-cat {
+    display: inline-block;
+    background: #e8e5f0;
+    color: #555;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.3px;
+  }
+  .qty-badge {
+    display: inline-block;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .qty-ok { background: #eafaf1; color: #1e8449; }
+  .qty-low { background: #fef9e7; color: #b7770d; }
+  .qty-critical { background: #fdedec; color: #a93226; }
+  .exp-ok { color: var(--green); }
+  .exp-soon { color: var(--yellow); font-weight: 500; }
+  .exp-past { color: var(--red); font-weight: 600; }
+  .action-btns { display: flex; gap: 6px; }
+  .btn-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: all 0.12s;
+  }
+  .btn-icon:hover { border-color: var(--accent); background: #fff0ee; }
+  .btn-icon.del:hover { border-color: var(--red); background: #fdedec; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--light);
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,26,46,0.45);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.18s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 28px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 16px 64px rgba(0,0,0,0.22);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--dark);
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--light); margin-bottom: 5px; }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    background: var(--bg);
+    color: var(--dark);
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-cancel { background: var(--bg); color: var(--mid); flex: 1; }
+  .btn-cancel:hover { background: var(--border); }
+  .btn-save { background: var(--accent); color: white; border-color: var(--accent); flex: 2; font-weight: 500; }
+  .btn-save:hover { background: var(--accent2); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--dark);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    z-index: 999;
+    display: none;
+    animation: slideUp 0.2s;
+  }
+  .toast.show { display: block; }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    .stats-bar .stat-card:last-child { grid-column: 1/-1; }
+    thead th:nth-child(4), td:nth-child(4) { display: none; }
+    .logo { font-size: 1.3rem; }
+    td, th { padding: 10px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Medi<span>Stock</span></div>
+  <div class="header-right">
+    <span class="badge" id="alertBadge">0 Alerts</span>
+  </div>
+</header>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat-card green"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total Items</div></div>
+  <div class="stat-card yellow"><div class="stat-num" id="statLow">0</div><div class="stat-label">Low Stock</div></div>
+  <div class="stat-card red"><div class="stat-num" id="statExpiring">0</div><div class="stat-label">Expiring Soon</div></div>
+</div>
+
+<div class="controls" style="margin-top:18px;">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search supplies..." oninput="renderTable()">
+  </div>
+  <select id="filterCat" onchange="renderTable()">
+    <option value="">All Categories</option>
+    <option>Bandages & Dressings</option>
+    <option>Medications</option>
+    <option>Instruments</option>
+    <option>Protective Equipment</option>
+    <option>IV & Fluids</option>
+    <option>Diagnostics</option>
+    <option>Other</option>
+  </select>
+  <select id="filterStatus" onchange="renderTable()">
+    <option value="">All Status</option>
+    <option value="low">Low Stock</option>
+    <option value="expiring">Expiring Soon</option>
+    <option value="expired">Expired</option>
+  </select>
+  <button class="btn btn-primary" onclick="openModal()">+ Add Item</button>
+</div>
+
+<div class="table-wrap container" style="margin-top:16px;">
+  <table>
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Category</th>
+        <th>Qty</th>
+        <th>Expiry Date</th>
+        <th>Location</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="icon">🏥</div>
+    <p>No supplies found. Add your first item!</p>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h2 id="modalTitle">Add Supply Item</h2>
+    <div class="form-group">
+      <label>Item Name *</label>
+      <input type="text" id="fName" placeholder="e.g. Surgical Gloves" required>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="fCat">
+        <option>Bandages & Dressings</option>
+        <option>Medications</option>
+        <option>Instruments</option>
+        <option>Protective Equipment</option>
+        <option>IV & Fluids</option>
+        <option>Diagnostics</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>Quantity *</label>
+        <input type="number" id="fQty" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Min. Stock Alert</label>
+        <input type="number" id="fMin" placeholder="10" min="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Expiry Date</label>
+      <input type="date" id="fExp">
+    </div>
+    <div class="form-group">
+      <label>Storage Location</label>
+      <input type="text" id="fLoc" placeholder="e.g. Cabinet A, Shelf 2">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-save" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────
+let items = JSON.parse(localStorage.getItem('medistock') || '[]');
+let editingId = null;
+
+// Seed sample data if empty
+if (items.length === 0) {
+  items = [
+    { id: uid(), name: 'Surgical Gloves (M)', cat: 'Protective Equipment', qty: 120, min: 50, exp: future(90), loc: 'Cabinet A' },
+    { id: uid(), name: 'Bandage Roll 4"', cat: 'Bandages & Dressings', qty: 8, min: 20, exp: future(200), loc: 'Supply Room' },
+    { id: uid(), name: 'Paracetamol 500mg', cat: 'Medications', qty: 200, min: 50, exp: future(15), loc: 'Medicine Cabinet' },
+    { id: uid(), name: 'Syringe 5ml', cat: 'IV & Fluids', qty: 300, min: 100, exp: future(365), loc: 'Drawer B3' },
+    { id: uid(), name: 'Blood Glucose Test Strips', cat: 'Diagnostics', qty: 5, min: 30, exp: future(-10), loc: 'Lab Shelf' },
+    { id: uid(), name: 'N95 Mask', cat: 'Protective Equipment', qty: 45, min: 20, exp: future(500), loc: 'Cabinet A' },
+    { id: uid(), name: 'IV Saline 0.9%', cat: 'IV & Fluids', qty: 12, min: 10, exp: future(30), loc: 'Storage C' },
+  ];
+  save();
+}
+
+function uid() { return Date.now() + Math.random().toString(36).slice(2,7); }
+function future(days) {
+  const d = new Date(); d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+}
+function save() { localStorage.setItem('medistock', JSON.stringify(items)); }
+
+// ── RENDER ───────────────────────────────────────────────
+function renderTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const cat = document.getElementById('filterCat').value;
+  const status = document.getElementById('filterStatus').value;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const in30 = new Date(); in30.setDate(today.getDate()+30);
+
+  let filtered = items.filter(i => {
+    const matchQ = !q || i.name.toLowerCase().includes(q) || i.cat.toLowerCase().includes(q) || (i.loc||'').toLowerCase().includes(q);
+    const matchCat = !cat || i.cat === cat;
+    const expDate = i.exp ? new Date(i.exp) : null;
+    let matchStatus = true;
+    if (status === 'low') matchStatus = i.qty <= i.min;
+    if (status === 'expiring') matchStatus = expDate && expDate > today && expDate <= in30;
+    if (status === 'expired') matchStatus = expDate && expDate < today;
+    return matchQ && matchCat && matchStatus;
+  });
+
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  tbody.innerHTML = '';
+
+  if (filtered.length === 0) { empty.style.display = 'block'; }
+  else {
+    empty.style.display = 'none';
+    filtered.forEach(item => {
+      const expDate = item.exp ? new Date(item.exp) : null;
+      const isExpired = expDate && expDate < today;
+      const isSoon = expDate && !isExpired && expDate <= in30;
+      const isLow = item.qty <= item.min;
+
+      const qtyClass = isLow ? (item.qty === 0 ? 'qty-critical' : 'qty-low') : 'qty-ok';
+      const expClass = isExpired ? 'exp-past' : isSoon ? 'exp-soon' : 'exp-ok';
+      const expTxt = item.exp ? (isExpired ? '⚠ ' : isSoon ? '⏰ ' : '') + item.exp : '—';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><div class="item-name">${item.name}</div></td>
+        <td><span class="item-cat">${item.cat}</span></td>
+        <td><span class="qty-badge ${qtyClass}">${item.qty} / ${item.min} min</span></td>
+        <td><span class="${expClass}">${expTxt}</span></td>
+        <td style="color:var(--mid);font-size:0.8rem;">${item.loc || '—'}</td>
+        <td>
+          <div class="action-btns">
+            <button class="btn-icon" title="Edit" onclick="editItem('${item.id}')">✏️</button>
+            <button class="btn-icon" title="Restock" onclick="restockItem('${item.id}')">➕</button>
+            <button class="btn-icon del" title="Delete" onclick="deleteItem('${item.id}')">🗑️</button>
+          </div>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const in30 = new Date(); in30.setDate(today.getDate()+30);
+  const low = items.filter(i => i.qty <= i.min).length;
+  const exp = items.filter(i => { const d = i.exp ? new Date(i.exp) : null; return d && d <= in30; }).length;
+  document.getElementById('statTotal').textContent = items.length;
+  document.getElementById('statLow').textContent = low;
+  document.getElementById('statExpiring').textContent = exp;
+  const alerts = low + exp;
+  document.getElementById('alertBadge').textContent = alerts + ' Alert' + (alerts !== 1 ? 's' : '');
+  document.getElementById('alertBadge').style.background = alerts > 0 ? 'var(--accent)' : '#3d9970';
+}
+
+// ── MODAL ────────────────────────────────────────────────
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modalTitle').textContent = id ? 'Edit Item' : 'Add Supply Item';
+  if (id) {
+    const it = items.find(i => i.id === id);
+    document.getElementById('fName').value = it.name;
+    document.getElementById('fCat').value = it.cat;
+    document.getElementById('fQty').value = it.qty;
+    document.getElementById('fMin').value = it.min;
+    document.getElementById('fExp').value = it.exp || '';
+    document.getElementById('fLoc').value = it.loc || '';
+  } else {
+    ['fName','fQty','fMin','fExp','fLoc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fCat').value = 'Bandages & Dressings';
+    document.getElementById('fMin').value = 10;
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('fName').focus(), 100);
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); editingId = null; }
+function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+function saveItem() {
+  const name = document.getElementById('fName').value.trim();
+  const qty = parseInt(document.getElementById('fQty').value) || 0;
+  if (!name) { showToast('⚠ Item name is required'); return; }
+  const data = {
+    name,
+    cat: document.getElementById('fCat').value,
+    qty,
+    min: parseInt(document.getElementById('fMin').value) || 10,
+    exp: document.getElementById('fExp').value || '',
+    loc: document.getElementById('fLoc').value.trim(),
+  };
+  if (editingId) {
+    const i = items.findIndex(x => x.id === editingId);
+    items[i] = { ...items[i], ...data };
+    showToast('✅ Item updated');
+  } else {
+    items.unshift({ id: uid(), ...data });
+    showToast('✅ Item added');
+  }
+  save(); closeModal(); renderTable();
+}
+
+function editItem(id) { openModal(id); }
+
+function restockItem(id) {
+  const qty = prompt('Add quantity to restock:');
+  if (qty === null) return;
+  const n = parseInt(qty);
+  if (isNaN(n) || n < 0) { showToast('⚠ Enter a valid number'); return; }
+  const i = items.findIndex(x => x.id === id);
+  items[i].qty += n;
+  save(); renderTable();
+  showToast(`✅ Restocked +${n} units`);
+}
+
+function deleteItem(id) {
+  if (!confirm('Delete this item?')) return;
+  items = items.filter(i => i.id !== id);
+  save(); renderTable();
+  showToast('🗑️ Item deleted');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── INIT ─────────────────────────────────────────────────
+renderTable();
+</script>
+</body>
+</html>
